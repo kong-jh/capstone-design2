@@ -1,0 +1,68 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>kakao map</title> 
+</head>
+
+<body>
+    <h1>kong's map</h1>
+    <div id="map" style="width:100%;height:500px;"></div>
+
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=<%= appkey %>"></script>
+    <script>
+    var mapContainer = document.getElementById('map'), 
+        mapOption = { 
+            center: new kakao.maps.LatLng(37.5973, 127.0520), 
+            level: 4 
+        };
+
+    var map = new kakao.maps.Map(mapContainer, mapOption); 
+
+    var positions = [
+        {
+            content: '<div>회기역 2번 출구</div>',
+            latlng: new kakao.maps.LatLng(37.58945084, 127.0595627)
+        },
+        {
+            content: '<div>경희대학교 청운관</div>',
+            latlng: new kakao.maps.LatLng(37.59460068, 127.0519714)
+        },
+        {
+            content: '<div>꿈마루어린이도서관 앞</div>',
+            latlng: new kakao.maps.LatLng(37.59238434, 127.0574112)
+        },
+        {
+            content: '<div>KAIST 경영대학 앞</div>',
+            latlng: new kakao.maps.LatLng(37.59161377, 127.0457916)
+        }
+];
+
+
+for (var i = 0; i < positions.length; i ++) {
+    var marker = new kakao.maps.Marker({
+        map: map, 
+        position: positions[i].latlng
+    });
+    
+    var infowindow = new kakao.maps.InfoWindow({
+        content: positions[i].content
+    });
+
+    kakao.maps.event.addListener(marker, 'mouseover', makeOverListener(map, marker, infowindow));
+    kakao.maps.event.addListener(marker, 'mouseout', makeOutListener(infowindow));
+}
+
+function makeOverListener(map, marker, infowindow) {
+    return function() {
+        infowindow.open(map, marker);
+    };
+}
+
+function makeOutListener(infowindow) {
+    return function() {
+        infowindow.close();
+    };
+}
+    </script>
+</body>
+</html>
