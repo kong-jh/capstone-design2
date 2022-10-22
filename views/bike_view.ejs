@@ -6,8 +6,9 @@
 
 <body>
     <h1>mobility map</h1>
+    <h3>🚲따릉이 대여소 위치</h3>
     <div id="map" style="width:100%;height:500px;"></div>
-    <h3><a href="/bike">🚲따릉이 대여소 위치보기</a></h3>
+    <p><a href="/">↩이전으로</a></p>
 
     <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=<%= appkey %>"></script>
     <script>
@@ -18,36 +19,21 @@
         };
 
     var map = new kakao.maps.Map(mapContainer, mapOption); 
+    var bikes = <%- JSON.stringify(results) %>;
+    for (var i = 0; i < bikes.length; i ++) {
+        latlng = new kakao.maps.LatLng(bikes[i].lat, bikes[i].lon);
+        content = '<div> • 대여소 번호: ' + bikes[i].id
+             +'<br> • 대여소 이름: '+ bikes[i].name+ '</div>';
+        console.log(content, latlng);
 
-    var positions = [
-        {
-            content: '<div>회기역 2번 출구</div>',
-            latlng: new kakao.maps.LatLng(37.58945084, 127.0595627)
-        },
-        {
-            content: '<div>경희대학교 청운관</div>',
-            latlng: new kakao.maps.LatLng(37.59460068, 127.0519714)
-        },
-        {
-            content: '<div>꿈마루어린이도서관 앞</div>',
-            latlng: new kakao.maps.LatLng(37.59238434, 127.0574112)
-        },
-        {
-            content: '<div>KAIST 경영대학 앞</div>',
-            latlng: new kakao.maps.LatLng(37.59161377, 127.0457916)
-        }
-];
-
-
-for (var i = 0; i < positions.length; i ++) {
-    var marker = new kakao.maps.Marker({
-        map: map, 
-        position: positions[i].latlng
-    });
+        var marker = new kakao.maps.Marker({
+            map: map, 
+            position: latlng
+        });
     
-    var infowindow = new kakao.maps.InfoWindow({
-        content: positions[i].content
-    });
+        var infowindow = new kakao.maps.InfoWindow({
+            content: content
+        });
 
     kakao.maps.event.addListener(marker, 'mouseover', makeOverListener(map, marker, infowindow));
     kakao.maps.event.addListener(marker, 'mouseout', makeOutListener(infowindow));
