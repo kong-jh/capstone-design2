@@ -1,6 +1,9 @@
 var express = require('express');
 var app = express();
 var request = require('request');
+
+var axios = require('axios');
+
 const bodyParser = require('body-parser');
 
 app.use(bodyParser.json());
@@ -17,6 +20,7 @@ app.set('views', 'views');
 
 //mysql
 var mysql = require('mysql');
+const { response } = require('express');
 const password = process.env.DATABASE_PASSWORD;
 var connection = mysql.createConnection({
     host: 'localhost',
@@ -46,17 +50,21 @@ app.get('/bike', (req, res) => {
   });
 
 app.get('/bikeapi', (req, res) => {
-  var api_url = 'http://openapi.seoul.go.kr:8088/52477357596b6a6831367345684774/json/bikeList/1/1000/';
-  request({
-    url: api_url,
-    method: 'GET'
-  }, function(error, response, body){
-    console.log('Status', response.statusCode);
-    console.log('Headers', JSON.stringify(response.headers));
-    console.log('Response received', body);
-    body = JSON.parse(body);
-    res.render('api_view', {appkey:process.env.appkey, locations:body.rentBikeStatus.row})
-  });
+  var api_url1 = 'http://openapi.seoul.go.kr:8088/52477357596b6a6831367345684774/json/bikeList/1/1000/';
+  var api_url2 = 'http://openapi.seoul.go.kr:8088/52477357596b6a6831367345684774/json/bikeList/1001/2000/';
+
+  axios
+    .all([axios.get(api_url1), axios.get(api_url2)])
+    .then(
+      axios.spread((res1, res2) => {
+        //console.log(res1, res2);
+        //console.log(res1.data.rentBikeStatus.row);
+        var res3 = [...res1.data.rentBikeStatus.row, ...res2.data.rentBikeStatus.row];
+        //console.log(res3);
+        res.render('api_view', {appkey:process.env.appkey, locations:res3})
+      })
+    )
+    .catch((err) => console.log(err));
 })
 
 var server = app.listen(3000, function () {
