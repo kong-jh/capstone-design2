@@ -34,25 +34,19 @@
         });
     
         var infowindow = new kakao.maps.InfoWindow({
-            content: content
+            content: content,
+            removable: true
         });
 
-    kakao.maps.event.addListener(marker, 'mouseover', makeOverListener(map, marker, infowindow));
-    kakao.maps.event.addListener(marker, 'mouseout', makeOutListener(infowindow));
+    kakao.maps.event.addListener(marker, 'click', clickListener(map, marker, infowindow));
 }
 
-function makeOverListener(map, marker, infowindow) {
+function clickListener(map, marker, infowindow) {
     return function() {
         infowindow.open(map, marker);
     };
 }
 
-function makeOutListener(infowindow) {
-    return function() {
-        infowindow.close();
-    };
-}
- 
     </script>
 </body>
 </html>
