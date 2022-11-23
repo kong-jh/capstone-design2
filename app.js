@@ -40,7 +40,7 @@ app.get('/', function(req, res) {
   var date = today.getDate();
   var hours = ('0'+(today.getHours()-1)%24).slice(-2);
 
-  axios.get("http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey="+key+"&dataType=JSON&base_date="+year+month+date+"&base_time="+hours+"00&nx=60&ny=127")
+  axios.get("http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey="+key+"&dataType=JSON&base_date="+year+month+date+"&base_time=1600&nx=60&ny=127")
   .then(function(response) {
     console.log(response);
     console.log(response.data.response.body.items.item);
@@ -48,14 +48,23 @@ app.get('/', function(req, res) {
     var hum = response.data.response.body.items.item[1].obsrValue;
     var wind = response.data.response.body.items.item[7].obsrValue;
     var prec = response.data.response.body.items.item[2].obsrValue;
-    res.render('view', {appkey:process.env.appkey, tmp:tmp, hum:hum, wind:wind, prec:prec});
+
+    var sql = 'select id, name, lat, lon from bike3';
+
+    connection.query(sql, (err, results) => {
+      if (err) {
+        console.log(err);
+        res.status(500).send('error');
+      }
+      res.render('view', {appkey:process.env.appkey, results:results, tmp:tmp, hum:hum, wind:wind, prec:prec});
+    });
   })
   .catch(function(error) {
     console.log(error);
   });
 })
 
-app.get('/bike', (req, res) => {
+app.get('/predict', (req, res) => {
     var sql = 'select id, name, lat, lon from bike3';
     connection.query(sql, (err, results) => {
       if (err) {
@@ -66,7 +75,7 @@ app.get('/bike', (req, res) => {
     });
   });
 
-app.get('/bikeapi', (req, res) => {
+app.get('/bikestatus', (req, res) => {
   var bikekey = process.env.bikekey;
   var api_url1 = 'http://openapi.seoul.go.kr:8088/'+bikekey+'/json/bikeList/1/1000/';
   var api_url2 = 'http://openapi.seoul.go.kr:8088/'+bikekey+'/json/bikeList/1001/2000/';
@@ -86,8 +95,9 @@ app.get('/bikeapi', (req, res) => {
     .catch((err) => console.log(err));
 });
 
-app.get('/predict/:id', (req, res) => {
+app.get('/predict/:id/:hour', (req, res) => {
   var id = req.params.id;
+  var hour = req.params.hour;
   const bikekey = process.env.bikekey;
   const weatherkey = process.env.weatherkey;
 
@@ -102,7 +112,7 @@ app.get('/predict/:id', (req, res) => {
   console.log('time', hours+'00');
 
   // weather
-  var weather_url = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?serviceKey="+weatherkey+"&pageNo=1&numOfRows=1000&dataType=JSON&base_date="+year+month+date+"&base_time="+hours+"00&nx=61&ny=127";
+  var weather_url = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?serviceKey="+weatherkey+"&pageNo=1&numOfRows=1000&dataType=JSON&base_date="+year+month+date+"&base_time="+hours+"30&nx=61&ny=127";
   var bike_url1 = 'http://openapi.seoul.go.kr:8088/'+bikekey+'/json/bikeList/1/1000/';
   var bike_url2 = 'http://openapi.seoul.go.kr:8088/'+bikekey+'/json/bikeList/1001/2000/';
   var bike_url3 = 'http://openapi.seoul.go.kr:8088/'+bikekey+'/json/bikeList/2001/3000/';
@@ -113,29 +123,33 @@ app.get('/predict/:id', (req, res) => {
       axios.spread((res1, res2, res3, res4) => {
         //weather, bike API
         var result = res1.data.response.body.items.item;
-        var weathers  = weather_extract(result, today.getHours());
-        //console.log(weathers);
+        //var weathers  = weather_extract(result, today.getHours());
+        var weather = weather_time(result, ('0'+(today.getHours()+Number(hour))%24).slice(-2)+"00", month);
+        console.log(weather);
 
         var locations = [...res2.data.rentBikeStatus.row, ...res3.data.rentBikeStatus.row, ...res4.data.rentBikeStatus.row];
-        console.log(locations);
+        //console.log(locations);
         var bike = locations.filter(function(e) {
           return e.stationName == id;
         })[0].parkingBikeTotCnt;
-
-        //console.log(bike);
         
         // predict : weather -> predict.py => (bike) - (result)
         // res.render('predict_view', {id:id, bike:bike, results:results});
-        const python = spawn('python', ['predict.py', year, month, date, day, hours]);
+        const python = spawn('python', ['predict.py', id, day, weather]);
         python.stdout.on('data', function(data) {
-          console.log(data.toString());
+          var result = data.toString().split('\n')[2];
+          console.log(result);
+          if (bike - result < 0) {
+            result = 0;
+          } else {
+            result = bike - result;
+          }
+          res.render('predict_view', {id:id, hour:hour, result:result});
         });
 
         python.stderr.on('data', function(data){
           console.log(data.toString());
         });
-
-        res.render('predict_view', {id:id, weathers:weathers, bike:bike});
       })
     )
     .catch((err) => console.log(err));
@@ -149,11 +163,14 @@ function weather_extract(data, basetime){
   return arr;
 };
 
-function weather_time(data, fcsttime){
+function weather_time(data, fcsttime, month){
   var json = data.filter(function(e){
     return e.fcstTime == fcsttime;
   });
-  return [fcsttime, json[4].fcstValue, json[8].fcstValue, json[9].fcstValue, json[2].fcstValue, json[5].fcstValue];
+  if (json[2].fcstValue == "강수없음"){
+    json[2].fcstValue = 0;
+  }
+  return [month, fcsttime, json[4].fcstValue, json[8].fcstValue, json[9].fcstValue, json[2].fcstValue, json[5].fcstValue];
 }
 
 var server = app.listen(3000, function () {

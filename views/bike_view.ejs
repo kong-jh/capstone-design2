@@ -6,7 +6,8 @@
 
 <body>
     <h1>mobility map</h1>
-    <h3>🚲따릉이 대여소 위치</h3>
+    <h3>⌚공공자전거 예측 정보 확인</h3>
+    <p>👉🏻<b>대여소</b>와 <b>시간대</b>를 선택해주세요!</p>
     <div id="map" style="width:100%;height:500px;"></div>
     <p><a href="/">↩이전으로</a></p>
 
@@ -23,7 +24,13 @@
     for (var i = 0; i < bikes.length; i ++) {
         latlng = new kakao.maps.LatLng(bikes[i].lat, bikes[i].lon);
         content = '<div> • 대여소 번호: ' + bikes[i].id
-             +'<br> • 대여소 이름: '+ bikes[i].name+ '</div>';
+             +'<br> • 대여소 이름: '+ bikes[i].name+ '</div>'+
+             '<h5>예측 정보 확인(시간 선택)</h5>'+
+             '<div style="text-align:center"><a href="/predict/'+bikes[i].id+'. '+bikes[i].name+'/1" style="color:white; font-weight: bold; border-style: solid; background-color: #739BE1; text-decoration: none">1시간 뒤</a></div>'+
+             '<div style="text-align:center"><a href="/predict/'+bikes[i].id+'. '+bikes[i].name+'/2" style="color:white; font-weight: bold; border-style: solid; background-color: #739BE1; text-decoration: none">2시간 뒤</a></div>'+
+             '<div style="text-align:center"><a href="/predict/'+bikes[i].id+'. '+bikes[i].name+'/3" style="color:white; font-weight: bold; border-style: solid; background-color: #739BE1; text-decoration: none">3시간 뒤</a></div>'+
+             '<div style="text-align:center"><a href="/predict/'+bikes[i].id+'. '+bikes[i].name+'/4" style="color:white; font-weight: bold; border-style: solid; background-color: #739BE1; text-decoration: none">4시간 뒤</a></div>'+
+             '<div style="text-align:center"><a href="/predict/'+bikes[i].id+'. '+bikes[i].name+'/5" style="color:white; font-weight: bold; border-style: solid; background-color: #739BE1; text-decoration: none">5시간 뒤</a></div>';
         console.log(content, latlng);
 
         var marker = new kakao.maps.Marker({
@@ -32,22 +39,16 @@
         });
     
         var infowindow = new kakao.maps.InfoWindow({
-            content: content
+            content: content,
+            removable: true
         });
 
-    kakao.maps.event.addListener(marker, 'mouseover', makeOverListener(map, marker, infowindow));
-    kakao.maps.event.addListener(marker, 'mouseout', makeOutListener(infowindow));
+    kakao.maps.event.addListener(marker, 'click', clickListener(map, marker, infowindow));
 }
 
-function makeOverListener(map, marker, infowindow) {
+function clickListener(map, marker, infowindow) {
     return function() {
         infowindow.open(map, marker);
-    };
-}
-
-function makeOutListener(infowindow) {
-    return function() {
-        infowindow.close();
     };
 }
     </script>
