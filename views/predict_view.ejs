@@ -1,0 +1,28 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>capstone design2</title> 
+</head>
+
+<body>
+    <h1>mobility map</h1>
+    <h3>⏱따릉이 예측 정보</h3>
+    <p><%= id %> 대여소 예측정보</p>
+    <p>현재 잔여 자전거 : <%= bike %></p>
+    <div>
+        <h2>날씨 정보</h2>
+        <ul>
+            <% for(var i=0; i<weathers.length; i++) { %>
+                <li>시간 <%= weathers[i][0] %></li>
+                <li>기온 <%= weathers[i][1] %>℃</li>
+                <li>풍향 <%= weathers[i][2] %>deg</li>
+                <li>풍속 <%= weathers[i][3] %>m/s</li>
+                <li>강수량 <%= weathers[i][4] %>mm</li>
+                <li>습도 <%= weathers[i][5] %>%</li>
+            <% } %>
+        </ul>
+    </div>
+    <p><a href="/">↩이전으로</a></p>
+
+</body>
+</html>

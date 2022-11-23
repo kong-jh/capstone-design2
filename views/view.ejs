@@ -6,9 +6,12 @@
 
 <body>
     <h1>mobility map</h1>
+    <h3>오늘의 날씨</h3>
+    <p>🌡기온은 <%= tmp %> ℃,  ☔강수량은 <%= prec %> mm,  💧습도는 <%= hum %> %,  💨풍속은 <%= wind %> m/s 입니다.</p>
     <div id="map" style="width:100%;height:500px;"></div>
     <h3><a href="/bike">🚲따릉이 대여소 위치 보기</a></h3>
     <h3><a href='/bikeapi'>🚩따릉이 실시간 현황정보 보기</a></h3>
+    
 
     <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=<%= appkey %>"></script>
     <script>
@@ -19,52 +22,6 @@
         };
 
     var map = new kakao.maps.Map(mapContainer, mapOption); 
-
-    var positions = [
-        {
-            content: '<div>회기역 2번 출구</div>',
-            latlng: new kakao.maps.LatLng(37.58945084, 127.0595627)
-        },
-        {
-            content: '<div>경희대학교 청운관</div>',
-            latlng: new kakao.maps.LatLng(37.59460068, 127.0519714)
-        },
-        {
-            content: '<div>꿈마루어린이도서관 앞</div>',
-            latlng: new kakao.maps.LatLng(37.59238434, 127.0574112)
-        },
-        {
-            content: '<div>KAIST 경영대학 앞</div>',
-            latlng: new kakao.maps.LatLng(37.59161377, 127.0457916)
-        }
-];
-
-
-for (var i = 0; i < positions.length; i ++) {
-    var marker = new kakao.maps.Marker({
-        map: map, 
-        position: positions[i].latlng
-    });
-    
-    var infowindow = new kakao.maps.InfoWindow({
-        content: positions[i].content
-    });
-
-    kakao.maps.event.addListener(marker, 'mouseover', makeOverListener(map, marker, infowindow));
-    kakao.maps.event.addListener(marker, 'mouseout', makeOutListener(infowindow));
-}
-
-function makeOverListener(map, marker, infowindow) {
-    return function() {
-        infowindow.open(map, marker);
-    };
-}
-
-function makeOutListener(infowindow) {
-    return function() {
-        infowindow.close();
-    };
-}
     </script>
 </body>
 </html>

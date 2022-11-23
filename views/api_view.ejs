@@ -23,13 +23,18 @@
     for (var i = 0; i < bikes.length; i ++) {
         latlng = new kakao.maps.LatLng(bikes[i].stationLatitude, bikes[i].stationLongitude);
         let bike_name = bikes[i].stationName.split('.');
-        content = '<div> • 대여소 번호: ' + bike_name[0] +
-            ' <br> • 대여소 이름: '+ bike_name[1] +
-            ' <br> • 잔여 자전거수: '+ bikes[i].parkingBikeTotCnt+ 
-            '<br> <a href="https://map.kakao.com/link/to/'+bike_name[1]+
+        var content = '<div>'+
+            '   <ul>'+
+            '       <li>대여소 번호 : '+bike_name[0] +'</li>'+
+            '       <li>대여소 이름 : '+ bike_name[1] +'</li>'+
+            '       <li>잔여 자전거수 : '+bikes[i].parkingBikeTotCnt +'</li>'+
+            
+            '   </ul>'+
+            '<div style="text-align:center"><a href="https://map.kakao.com/link/to/'+bike_name[1]+
             ','+bikes[i].stationLatitude+','+bikes[i].stationLongitude+
-            '" style="color:green; font-weight: bold" target="_blank">⤴길찾기</a>'+
-            '</div>';
+            '" style="color:white; font-weight: bold; border-style: solid; background-color: grey; text-decoration: none" target="_blank">⤴길찾기</a></div>'+
+            '<div style="text-align:center"><a href="/predict/'+bikes[i].stationName+'" style="color:white; font-weight: bold; border-style: solid; background-color: #739BE1; text-decoration: none">예측 정보 확인</a></div>';
+
         console.log(content, latlng);
 
         var marker = new kakao.maps.Marker({
