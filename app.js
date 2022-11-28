@@ -4,13 +4,6 @@ var request = require('request');
 const spawn = require('child_process').spawn;
 var axios = require('axios');
 
-const bodyParser = require('body-parser');
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-  extended: true
-}));
-
 // env file
 require('dotenv').config();
 
@@ -40,7 +33,7 @@ app.get('/', function(req, res) {
   var date = today.getDate();
   var hours = ('0'+(today.getHours()-1)%24).slice(-2);
 
-  axios.get("http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey="+key+"&dataType=JSON&base_date="+year+month+date+"&base_time=1600&nx=60&ny=127")
+  axios.get("http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey="+key+"&dataType=JSON&base_date="+year+month+date+"&base_time="+hours+"00&nx=60&ny=127")
   .then(function(response) {
     console.log(response);
     console.log(response.data.response.body.items.item);
@@ -134,7 +127,6 @@ app.get('/predict/:id/:hour', (req, res) => {
         })[0].parkingBikeTotCnt;
         
         // predict : weather -> predict.py => (bike) - (result)
-        // res.render('predict_view', {id:id, bike:bike, results:results});
         const python = spawn('python', ['predict.py', id, day, weather]);
         python.stdout.on('data', function(data) {
           var result = data.toString().split('\n')[2];
@@ -155,14 +147,6 @@ app.get('/predict/:id/:hour', (req, res) => {
     .catch((err) => console.log(err));
 });
 
-function weather_extract(data, basetime){
-  var arr = new Array(6);
-  for(var i=0; i<6; i++){
-    arr[i] = weather_time(data, ('0'+(basetime+i)%24).slice(-2)+"00");
-  }
-  return arr;
-};
-
 function weather_time(data, fcsttime, month){
   var json = data.filter(function(e){
     return e.fcstTime == fcsttime;
@@ -177,4 +161,4 @@ var server = app.listen(3000, function () {
     var host = server.address().address;
     var port = server.address().port;
     console.log("listening at http://%s:%s", host, port);
-})
+});
