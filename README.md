@@ -1,7 +1,6 @@
 # capstone-design2
 <div align="center">
 
-  <img width="300" height="300" src="mbti.jpg">
   <h1 align="center">대여소 기반 라스트마일 이동수단 예측 맵 서비스</h1>
 
 </div>             
