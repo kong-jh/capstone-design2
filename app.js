@@ -29,8 +29,8 @@ app.get('/', function(req, res) {
   const key = process.env.weatherkey;
   var today = new Date();
   var year = today.getFullYear();
-  var month = today.getMonth() + 1;
-  var date = today.getDate();
+  var month = ('0'+(today.getMonth() + 1)).slice(-2);
+  var date = ('0'+today.getDate()).slice(-2);
   var hours = ('0'+(today.getHours()-1)%24).slice(-2);
 
   axios.get("http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey="+key+"&dataType=JSON&base_date="+year+month+date+"&base_time="+hours+"00&nx=60&ny=127")
@@ -97,15 +97,15 @@ app.get('/predict/:id/:hour', (req, res) => {
   // today
   var today = new Date();
   var year = today.getFullYear();
-  var month = today.getMonth() + 1;
-  var date = today.getDate();
-  var day = (today.getDay() -1)%7;
+  var month = ('0'+(today.getMonth() + 1)).slice(-2);
+  var date = ('0'+today.getDate()).slice(-2);
+  var day = (today.getDay() +6)%7;
   var hours = ('0'+(today.getHours()-1)%24).slice(-2);
   console.log('day', year,month,date);
   console.log('time', hours+'00');
 
   // weather
-  var weather_url = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?serviceKey="+weatherkey+"&pageNo=1&numOfRows=1000&dataType=JSON&base_date="+year+month+date+"&base_time="+hours+"30&nx=61&ny=127";
+  var weather_url = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?serviceKey="+weatherkey+"&pageNo=1&numOfRows=1000&dataType=JSON&base_date="+year+month+date+"&base_time="+hours+"00&nx=61&ny=127";
   var bike_url1 = 'http://openapi.seoul.go.kr:8088/'+bikekey+'/json/bikeList/1/1000/';
   var bike_url2 = 'http://openapi.seoul.go.kr:8088/'+bikekey+'/json/bikeList/1001/2000/';
   var bike_url3 = 'http://openapi.seoul.go.kr:8088/'+bikekey+'/json/bikeList/2001/3000/';
@@ -127,7 +127,7 @@ app.get('/predict/:id/:hour', (req, res) => {
         })[0].parkingBikeTotCnt;
         
         // predict : weather -> predict.py => (bike) - (result)
-        const python = spawn('python', ['predict.py', id, day, weather]);
+        const python = spawn('python', ["predict.py", id, day, weather]);
         python.stdout.on('data', function(data) {
           var result = data.toString().split('\n')[2];
           console.log(result);
